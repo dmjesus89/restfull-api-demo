@@ -1,0 +1,422 @@
+openapi: 3.0.3
+info:
+  x-api-id: 1feaed48-fc33-4178-a126-dcc747ee16cb # https://api-guidelines.int.kn/api-guidelines/current/api-guidelines/index.html#215
+  x-api-guideline-version: 1.2.1  # https://api-guidelines.int.kn/api-guidelines/current/api-guidelines/index.html#218
+  title: A clear and concise title that describes the API's purpose
+  version: 1.0.0
+  description: &gt;-
+                 A brief description of the API's functionality, including what it does and how it works.
+  contact:
+    name: Contact name
+    url: http://www.example.com/support
+    email: support@example.com
+paths:
+  /examples:
+    get:
+      summary: Retrieve a list of examples
+      operationId: listExamples
+      description: Retrieve a list of examples
+      parameters:
+        - name: type
+          in: query
+          description: Filter examples by type
+          required: false
+          schema:
+            type: string
+            maxLength: 50
+        - name: page
+          in: query
+          description: The page number to retrieve.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          description: The number of examples per page.
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: A list of examples
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponsePage'
+              example:
+                self: https://example.com/api/examples?page=2
+                first: https://example.com/api/examples?page=1
+                prev: https://example.com/api/examples?page=1
+                next: https://example.com/api/examples?page=3
+                last: https://example.com/api/examples?page=10
+                query:
+                  type: TYPE_1
+                examples:
+                  - id: "id1234"
+                    type: TYPE_1
+                    name: Example 1
+                    details:
+                      creationDate: '2022-05-01T12:00:00Z'
+                      description: This is an example description
+                  - id: "id5678"
+                    type: TYPE_1
+                    name: Example 2
+                    details:
+                      creationDate: '2022-05-02T12:00:00Z'
+                      description: This is another example description
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Error occurred - see status code and problem object for more information.
+    post:
+      summary: Create a new example
+      operationId: createExample
+      description: Create a new example
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExampleInput'
+      responses:
+        '201':
+          description: The created example
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Example'
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Error occurred - see status code and problem object for more information.
+  /examples/{exampleId}:
+    get:
+      summary: Retrieve a single example by ID
+      operationId: getExampleById
+      description: Retrieve a single example by ID
+      parameters:
+        - name: exampleId
+          in: path
+          description: ID of the example to retrieve
+          required: true
+          schema:
+            type: string
+            maxLength: 50
+      responses:
+        '200':
+          description: The requested example
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Example'
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Error occurred - see status code and problem object for more information.
+    put:
+      summary: Update an existing example by ID
+      operationId: putExample
+      description: Update an existing example by ID
+      parameters:
+        - name: exampleId
+          in: path
+          description: ID of the example to update
+          required: true
+          schema:
+            type: string
+            maxLength: 50
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExampleInput'
+      responses:
+        '200':
+          description: The updated example
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Example'
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Error occurred - see status code and problem object for more information.
+    patch:
+      summary: Partially update an example by ID
+      operationId: patchExample
+      description: Update an existing example by ID using a JSON Patch document
+      parameters:
+        - name: exampleId
+          in: path
+          description: ID of the example to update
+          required: true
+          schema:
+            type: string
+            maxLength: 50
+      requestBody:
+        description: JSON Patch document containing the changes to apply
+        required: true
+        content:
+          application/json-patch+json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/ExamplePatchOperation'
+            examples:
+              updateName:
+                summary: Change example name
+                value:
+                  - op: REPLACE
+                    path: /name
+                    value: New Example Name
+              updateType:
+                summary: Change example type
+                value:
+                  - op: REPLACE
+                    path: /type
+                    value: TYPE_2
+              updateDetails:
+                summary: Change example details
+                value:
+                  - op: REPLACE
+                    path: /details/description
+                    value: This is the updated description for the example
+                  - op: REPLACE
+                    path: /details/creationDate
+                    value: '2023-05-03T18:00:00Z'
+      responses:
+        '200':
+          description: The updated example
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Example'
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Error occurred - see status code and problem object for more information.
+    delete:
+      summary: Delete an example
+      operationId: deleteExample
+      description: Delete an example
+      parameters:
+        - name: exampleId
+          in: path
+          description: ID of the example to delete
+          required: true
+          schema:
+            type: string
+            maxLength: 50
+      responses:
+        '204':
+          description: The example was successfully deleted
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+          description: Error occurred - see status code and problem object for more information.
+components:
+  schemas:
+    ResponsePage:
+      type: object
+      required:
+        - examples
+        - next
+      properties:
+        self:
+          description: Link pointing to the current page.
+          type: string
+          format: uri
+        first:
+          description: Link pointing to the first page.
+          type: string
+          format: uri
+        prev:
+          description: Link pointing to the previous page.
+          type: string
+          format: uri
+        next:
+          description: Link pointing to the next page.
+          type: string
+          format: uri
+        last:
+          description: Link pointing to the last page.
+          type: string
+          format: uri
+        query:
+          description: Object containing the query filters applied to the collection resource.
+          type: object
+          properties:
+            type:
+              description: The type of the examples to retrieve.
+              type: string
+              maxLength: 50
+              x-extensible-enum:
+                - TYPE_1
+                - TYPE_2
+                - TYPE_3
+          required:
+            - type
+        examples:
+          description: Array of examples.
+          type: array
+          maxItems: 1000
+          items:
+            $ref: '#/components/schemas/Example'
+    Example:
+      type: object
+      properties:
+        id:
+          type: string
+          maxLength: 50
+          description: The unique identifier for the example
+          example: "id1"
+        name:
+          type: string
+          maxLength: 200
+          description: The name of the example
+          example: Example 1
+        type:
+          type: string
+          maxLength: 50
+          description: The type of the example
+          x-extensible-enum:
+            - TYPE_1
+            - TYPE_2
+            - TYPE_3
+          example: TYPE_1
+        details:
+          $ref: '#/components/schemas/Details'
+      required:
+        - id
+        - name
+        - type
+    Details:
+      type: object
+      description: Extra details about the example
+      properties:
+        description:
+          type: string
+          maxLength: 200
+          description: A detailed description of the example
+          example: This is an example of TYPE_1
+        creationDate:
+          type: string
+          format: date-time
+          description: The date the example was created
+          example: '2023-05-03T12:30:45Z'
+      required:
+        - description
+        - creationDate
+    ExampleInput:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 200
+          description: The name of the example
+          example: Example 1
+        type:
+          type: string
+          maxLength: 50
+          description: The type of the example
+          x-extensible-enum:
+            - TYPE_1
+            - TYPE_2
+            - TYPE_3
+          example: TYPE_1
+      required:
+        - name
+        - type
+    ExamplePatchOperation:
+      type: object
+      properties:
+        op:
+          type: string
+          maxLength: 50
+          x-extensible-enum:
+            - ADD
+            - REMOVE
+            - REPLACE
+            - MOVE
+            - COPY
+            - TEST
+          example: REPLACE
+        path:
+          type: string
+          maxLength: 50
+          description: The JSON Pointer path to the value to be modified
+          example: /name
+        value:
+          description: The new value to be assigned to the specified path
+          example: New Example Name
+    Problem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri-reference
+          description: &gt;
+                         A URI reference that uniquely identifies the problem type only in
+                         the context of the provided API. Opposed to the specification in
+                         RFC-7807, it is neither recommended to be dereferencable and point
+                         to a human-readable documentation nor globally unique for the
+                         problem type.
+          default: 'about:blank'
+          example: /problem/connection-error
+        title:
+          type: string
+          maxLength: 256
+          description: &gt;
+                         A short summary of the problem type. Written in English and readable
+                         for engineers, usually not suited for non technical stakeholders and
+                         not localized.
+          example: Service Unavailable
+        status:
+          type: integer
+          format: int32
+          description: &gt;
+                         The HTTP status code generated by the origin server for this
+                         occurrence of the problem.
+          minimum: 100
+          maximum: 600
+          exclusiveMaximum: true
+          example: 503
+        detail:
+          type: string
+          maxLength: 256
+          description: &gt;
+                         A human readable explanation specific to this occurrence of the
+                         problem that is helpful to locate the problem and give advice on how
+                         to proceed. Written in English and readable for engineers, usually
+                         not suited for non technical stakeholders and not localized.
+          example: Connection to database timed out
+        instance:
+          type: string
+          format: uri-reference
+          description: &gt;
+                         A URI reference that identifies the specific occurrence of the
+                         problem, e.g. by adding a fragment identifier or sub-path to the
+                         problem type. May be used to locate the root of this problem in the
+                         source code.
+          example: '/problem/connection-error#token-info-read-timed-out'
+      required:
+        - detail
+        - title
