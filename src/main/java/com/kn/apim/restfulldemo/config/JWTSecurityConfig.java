@@ -10,7 +10,6 @@ import org.springframework.security.oauth2.server.resource.web.HeaderBearerToken
 import org.springframework.security.web.SecurityFilterChain;
 
 
-@Configuration
 @EnableWebSecurity
 public class JWTSecurityConfig {
     @Value("${knite.jwt.authTokenHeaderName}")
